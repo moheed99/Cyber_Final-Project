@@ -1,0 +1,8 @@
+Approved Targets:
+- Localhost (127.0.0.1)
+- PayBuddy Dev Environment
+- Lab Network 192.168.1.x
+
+Approved By: QA Lead
+Date: 2024-05-20
+Status: AUTHORIZED FOR TESTING

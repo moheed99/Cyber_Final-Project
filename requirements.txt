@@ -1,0 +1,8 @@
+streamlit
+pandas
+plotly
+requests
+scapy
+python-docx
+matplotlib
+streamlit-lottie

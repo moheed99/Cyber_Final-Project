@@ -1,0 +1,5 @@
+{
+  "name": "PayBuddy CyberGuard Toolkit",
+  "description": "A comprehensive hybrid hacking toolkit dashboard for PayBuddy QA, featuring port scanning, password auditing, and AI-driven reporting.",
+  "requestFramePermissions": []
+}
