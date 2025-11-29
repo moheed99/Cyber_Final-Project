@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Copy, FileText, Code, Check } from 'lucide-react';
+import { Download, Copy, FileText, Code, Check, AlertTriangle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [activeFile, setActiveFile] = useState('src/app.py');
@@ -35,6 +35,13 @@ try:
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
+
+# Try to import lottie
+try:
+    from streamlit_lottie import st_lottie
+    LOTTIE_AVAILABLE = True
+except ImportError:
+    LOTTIE_AVAILABLE = False
 
 # ==========================================
 # CONFIGURATION & THEME
@@ -166,7 +173,7 @@ def verify_identity():
         if not os.path.exists("identity.txt"):
             return False, "Missing identity.txt"
         
-        with open("identity.txt", "r") as f:
+        with open("identity.txt", "r", encoding='utf-8') as f:
             identity_content = f.read()
             if TEAM_NAME not in identity_content:
                 return False, "Invalid Team Name in identity.txt"
@@ -179,16 +186,33 @@ def verify_identity():
     except Exception as e:
         return False, str(e)
 
+def load_lottie_url(url: str):
+    if not LOTTIE_AVAILABLE:
+        return None
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except:
+        return None
+
+# Load Animation
+lottie_cyber = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_w51pcehl.json")
+
 # ==========================================
 # SIDEBAR & AUTHENTICATION
 # ==========================================
 with st.sidebar:
     st.title("🛡️ CyberGuard Toolkit")
+    if lottie_cyber and LOTTIE_AVAILABLE:
+        st_lottie(lottie_cyber, height=150, key="sidebar_anim")
+    
     st.markdown("---")
     
     st.subheader("Team Identity")
     if os.path.exists("identity.txt"):
-        with open("identity.txt", "r") as f:
+        with open("identity.txt", "r", encoding='utf-8') as f:
             st.code(f.read(), language="yaml")
     else:
         st.error("❌ identity.txt NOT FOUND")
@@ -205,7 +229,7 @@ with st.sidebar:
                 st.rerun()
         else:
             st.error(f"Authentication Failed: {auth_msg}")
-            st.warning("Please ensure identity.txt and consent.txt are in the root directory.")
+            st.warning("Ensure identity.txt and consent.txt are present.")
     else:
         st.success(f"✅ Authenticated as {TEAM_NAME}")
         if st.button("🔓 Lock Session"):
@@ -636,6 +660,21 @@ streamlit-lottie`
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = () => {
+    const fileContent = files[activeFile as keyof typeof files];
+    // CRITICAL FIX: Explicitly set UTF-8 encoding to prevent binary corruption on some OS/Browsers
+    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const fileName = activeFile.split('/').pop() || activeFile;
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex h-screen bg-[#0d1117] text-gray-300 font-sans">
       {/* File Browser Sidebar */}
@@ -663,7 +702,7 @@ streamlit-lottie`
           ))}
         </nav>
         <div className="p-4 border-t border-gray-800 text-xs text-gray-500">
-          PayBuddy CyberGuard v1.0<br/>
+          PayBuddy CyberGuard v1.1<br/>
           Python Streamlit Edition
         </div>
       </div>
@@ -671,10 +710,22 @@ streamlit-lottie`
       {/* Code Viewer Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-gray-800 flex items-center justify-between px-6 bg-[#0d1117]">
-          <div className="text-sm font-mono text-white">
-            {activeFile}
+          <div className="flex items-center gap-3">
+             <div className="text-sm font-mono text-white">
+                {activeFile}
+             </div>
+             {activeFile.endsWith('.py') && (
+                 <span className="text-[10px] bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded border border-blue-800">Python Source</span>
+             )}
           </div>
           <div className="flex items-center gap-2">
+             <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gray-700 text-white rounded-md hover:bg-gray-600 transition-colors border border-gray-600"
+            >
+              <Download className="w-3 h-3" />
+              Download File
+            </button>
              <button
               onClick={handleCopy}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-[#238636] text-white rounded-md hover:bg-[#2ea043] transition-colors"
@@ -684,6 +735,11 @@ streamlit-lottie`
             </button>
           </div>
         </header>
+
+        <div className="bg-yellow-900/20 border-b border-yellow-800/50 px-6 py-2 text-xs text-yellow-500 flex items-center gap-2">
+            <AlertTriangle className="w-3 h-3" />
+            <span>Ensure you download/copy this code exactly. If you see "SyntaxError: invalid character" in your logs, your local file was saved as binary. Use Copy Code to fix.</span>
+        </div>
 
         <main className="flex-1 overflow-auto p-0 bg-[#0d1117]">
           <pre className="p-6 text-sm font-mono leading-relaxed text-[#c9d1d9]">
