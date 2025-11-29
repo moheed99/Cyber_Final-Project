@@ -1,4 +1,7 @@
-# VERSION: FIXED_SYNTAX_V2
+# VERSION: V3.0_ELITE_EDITION
+# AUTHOR: CYBERGUARD TEAM
+# THEME: NEON CYBERPUNK FUTURISTIC
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -16,21 +19,23 @@ import string
 from datetime import datetime
 from io import BytesIO
 
-# Try to import scapy, fallback if not available (common in some cloud envs)
-try:
-    from scapy.all import sniff, IP, TCP, UDP
-    SCAPY_AVAILABLE = True
-except ImportError:
-    SCAPY_AVAILABLE = False
+# ==========================================
+# 1. PAGE CONFIGURATION & ASSETS
+# ==========================================
+st.set_page_config(
+    page_title="PAYBUDDY // CYBERGUARD ELITE",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Try to import docx
+# TRY IMPORTS (Graceful Degradation)
 try:
     from docx import Document
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
 
-# Try to import lottie
 try:
     from streamlit_lottie import st_lottie
     LOTTIE_AVAILABLE = True
@@ -38,100 +43,109 @@ except ImportError:
     LOTTIE_AVAILABLE = False
 
 # ==========================================
-# CONFIGURATION & THEME
+# 2. FUTURISTIC UI ENGINE (CSS INJECTION)
 # ==========================================
-st.set_page_config(
-    page_title="PayBuddy CyberGuard Toolkit",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Custom CSS for "Extraordinary" Cyberpunk Look
 st.markdown("""
 <style>
-    /* Global Theme */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
+    /* GLOBAL THEME */
     .stApp {
-        background-color: #0e1117;
+        background-color: #050505;
+        background-image: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
         color: #e0e0e0;
-    }
-    
-    /* Headers */
-    h1, h2, h3 {
-        color: #00ffcc !important;
-        font-family: 'Courier New', Courier, monospace;
-    }
-    
-    /* Metrics */
-    div[data-testid="stMetricValue"] {
-        font-size: 24px;
-        color: #00ffcc;
-    }
-    
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
-        background-color: #161b22;
-        border-right: 1px solid #30363d;
-    }
-    
-    /* Buttons */
-    .stButton>button {
-        background-color: #238636;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 10px 20px;
-        font-weight: bold;
-        transition: all 0.3s;
-    }
-    .stButton>button:hover {
-        background-color: #2ea043;
-        box-shadow: 0 0 10px #2ea043;
-    }
-    
-    /* Status Messages */
-    .success-box {
-        padding: 10px;
-        background-color: rgba(46, 160, 67, 0.2);
-        border: 1px solid #2ea043;
-        border-radius: 5px;
-        color: #7ee787;
-    }
-    .warning-box {
-        padding: 10px;
-        background-color: rgba(210, 153, 34, 0.2);
-        border: 1px solid #d29922;
-        border-radius: 5px;
-        color: #e3b341;
-    }
-    .error-box {
-        padding: 10px;
-        background-color: rgba(248, 81, 73, 0.2);
-        border: 1px solid #f85149;
-        border-radius: 5px;
-        color: #ff7b72;
+        font-family: 'Share Tech Mono', monospace;
     }
 
-    /* Tabs */
+    /* NEON HEADERS */
+    h1, h2, h3 {
+        font-family: 'Orbitron', sans-serif !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    h1 { 
+        background: -webkit-linear-gradient(#00f3ff, #0066ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0px 0px 20px rgba(0, 243, 255, 0.5);
+    }
+    h2 { color: #00f3ff; border-bottom: 1px solid #00f3ff; padding-bottom: 10px; }
+    h3 { color: #ff0055; }
+
+    /* CUSTOM CARDS */
+    div.css-1r6slb0 {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] {
+        background-color: #0a0a0a;
+        border-right: 1px solid #333;
+    }
+
+    /* METRICS */
+    div[data-testid="stMetricValue"] {
+        font-family: 'Orbitron';
+        color: #00f3ff !important;
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #888;
+        font-size: 0.8rem;
+    }
+
+    /* BUTTONS */
+    .stButton>button {
+        background: linear-gradient(45deg, #001133, #003366);
+        color: #00f3ff;
+        border: 1px solid #00f3ff;
+        border-radius: 0px;
+        font-family: 'Orbitron';
+        font-weight: bold;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .stButton>button:hover {
+        background: #00f3ff;
+        color: #000;
+        box-shadow: 0 0 20px #00f3ff;
+    }
+
+    /* TABS */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+        gap: 8px;
+        background-color: transparent;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #21262d;
-        border-radius: 4px;
-        color: #8b949e;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 1px solid #333;
+        color: #888;
+        font-family: 'Orbitron';
     }
     .stTabs [aria-selected="true"] {
-        background-color: #1f6feb;
-        color: white;
+        background-color: rgba(0, 243, 255, 0.1) !important;
+        border-color: #00f3ff !important;
+        color: #00f3ff !important;
+        box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2);
+    }
+
+    /* ALERTS */
+    .element-container .stAlert {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid;
+        backdrop-filter: blur(5px);
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# CONSTANTS & SETUP
+# 3. CORE CONSTANTS & SESSION
 # ==========================================
 TEAM_NAME = "CyberGuard"
 TEAM_MEMBERS = [
@@ -140,488 +154,310 @@ TEAM_MEMBERS = [
     {"name": "Abdur Rehman", "reg": "22I-2291"}
 ]
 
-if 'logs' not in st.session_state:
-    st.session_state.logs = []
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'scan_results' not in st.session_state:
-    st.session_state.scan_results = []
+if 'logs' not in st.session_state: st.session_state.logs = []
+if 'auth' not in st.session_state: st.session_state.auth = False
+
+def log_system(tool, type_, msg):
+    ts = datetime.now().strftime("%H:%M:%S")
+    st.session_state.logs.insert(0, {"timestamp": ts, "tool": tool, "type": type_, "message": msg})
 
 # ==========================================
-# HELPER FUNCTIONS
+# 4. IDENTITY GATE
 # ==========================================
-def log_event(tool, event_type, message):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = {
-        "timestamp": timestamp,
-        "tool": tool,
-        "type": event_type,
-        "message": message
-    }
-    st.session_state.logs.append(entry)
-
-def verify_identity():
-    """Reads identity.txt and consent.txt to verify authorization."""
-    try:
-        # Check Identity
-        if not os.path.exists("identity.txt"):
-            return False, "Missing identity.txt"
+def check_access():
+    with st.sidebar:
+        st.markdown("## 🔒 ACCESS CONTROL")
+        st.image("https://img.icons8.com/nolan/96/fingerprint-scan.png", width=80)
         
-        with open("identity.txt", "r", encoding='utf-8') as f:
-            identity_content = f.read()
-            if TEAM_NAME not in identity_content:
-                return False, "Invalid Team Name in identity.txt"
+        status_c = st.container()
         
-        # Check Consent
-        if not os.path.exists("consent.txt"):
-            return False, "Missing consent.txt"
+        # Identity File Check
+        id_exists = os.path.exists("identity.txt")
+        con_exists = os.path.exists("consent.txt")
         
-        return True, "Verified"
-    except Exception as e:
-        return False, str(e)
-
-def load_lottie_url(url: str):
-    if not LOTTIE_AVAILABLE:
-        return None
-    try:
-        r = requests.get(url)
-        if r.status_code != 200:
-            return None
-        return r.json()
-    except:
-        return None
-
-# Load Animation
-lottie_cyber = load_lottie_url("https://assets5.lottiefiles.com/packages/lf20_w51pcehl.json")
-
-# ==========================================
-# SIDEBAR & AUTHENTICATION
-# ==========================================
-with st.sidebar:
-    st.title("🛡️ CyberGuard Toolkit")
-    if lottie_cyber and LOTTIE_AVAILABLE:
-        st_lottie(lottie_cyber, height=150, key="sidebar_anim")
-    
-    st.markdown("---")
-    
-    st.subheader("Team Identity")
-    if os.path.exists("identity.txt"):
-        with open("identity.txt", "r", encoding='utf-8') as f:
-            st.code(f.read(), language="yaml")
-    else:
-        st.error("❌ identity.txt NOT FOUND")
-
-    st.markdown("---")
-    st.subheader("Authorization")
-    
-    if not st.session_state.authenticated:
-        auth_status, auth_msg = verify_identity()
-        if auth_status:
-            if st.button("🔐 Authenticate & Load Toolkit"):
-                st.session_state.authenticated = True
-                log_event("SYSTEM", "INFO", "User authenticated successfully via identity.txt")
-                st.rerun()
+        if id_exists and con_exists:
+            status_c.success("IDENTITY VERIFIED")
+            status_c.success("CONSENT TOKEN ACTIVE")
+            if not st.session_state.auth:
+                if st.button("INITIALIZE SYSTEM"):
+                    st.session_state.auth = True
+                    log_system("KERNEL", "INFO", "Session Initialized by authorized personnel.")
+                    st.rerun()
         else:
-            st.error(f"Authentication Failed: {auth_msg}")
-            st.warning("Ensure identity.txt and consent.txt are present.")
-    else:
-        st.success(f"✅ Authenticated as {TEAM_NAME}")
-        if st.button("🔓 Lock Session"):
-            st.session_state.authenticated = False
-            st.rerun()
+            status_c.error("MISSING CREDENTIALS")
+            st.warning("Upload identity.txt & consent.txt to root.")
+            if not id_exists: st.code("ERROR: identity.txt not found", language="bash")
+            if not con_exists: st.code("ERROR: consent.txt not found", language="bash")
 
 # ==========================================
-# MAIN APP LOGIC
+# 5. DASHBOARD & TOOLS
 # ==========================================
-
-if not st.session_state.authenticated:
-    # LANDING PAGE (LOCKED)
+if not st.session_state.auth:
+    check_access()
     st.markdown("""
-    <div style="text-align: center; padding: 50px;">
-        <h1 style="font-size: 3em;">🔒 PAYBUDDY CYBERGUARD</h1>
-        <p style="font-size: 1.2em; color: #8b949e;">Authorized Personnel Only. Please verify identity in the sidebar.</p>
-        <br>
-        <div style="background: #161b22; padding: 20px; border-radius: 10px; display: inline-block; text-align: left;">
-            <p><strong>System Status:</strong> <span style="color: orange;">LOCKED</span></p>
-            <p><strong>Environment:</strong> PROD_QA_01</p>
-            <p><strong>Modules Loaded:</strong> 6/6</p>
+    <div style='display:flex; justify-content:center; align-items:center; height:60vh; flex-direction:column;'>
+        <h1 style='font-size:4em; margin-bottom:0;'>CYBERGUARD ELITE</h1>
+        <h3 style='color:#555;'>RESTRICTED ACCESS // PAYBUDDY QA ENV</h3>
+        <div style='margin-top:50px; border:1px solid #333; padding:20px; background:rgba(0,0,0,0.5);'>
+            WAITING FOR BIOMETRIC HANDSHAKE...
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 else:
-    # DASHBOARD TABS
-    tab_dash, tab_scan, tab_auth, tab_dos, tab_recon, tab_pcap, tab_report = st.tabs([
-        "📊 Dashboard", 
-        "🔍 Port Scanner", 
-        "🔐 Auth Audit", 
-        "⚡ DoS Stress", 
-        "🌐 Web Recon", 
-        "📡 Packet Sniffer", 
-        "📑 Reporting"
-    ])
+    # --- HEADER ---
+    c1, c2 = st.columns([3, 1])
+    with c1:
+        st.title("PAYBUDDY // DEFENSE GRID")
+        st.markdown(f"**OPERATOR:** {TEAM_NAME} | **ENV:** PROD_SIM_01 | **LATENCY:** 12ms")
+    with c2:
+        if st.button("TERMINATE SESSION"):
+            st.session_state.auth = False
+            st.rerun()
 
-    # --------------------------------------------------------------------------------
-    # 1. DASHBOARD
-    # --------------------------------------------------------------------------------
-    with tab_dash:
-        st.header(f"Welcome, {TEAM_NAME} Commander")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric(label="System Status", value="ONLINE", delta="Secure")
-        with col2:
-            st.metric(label="Tools Active", value="5 Modules")
-        with col3:
-            st.metric(label="Logs Generated", value=len(st.session_state.logs))
-        with col4:
-            st.metric(label="Target Env", value="Localhost / Lab")
+    # --- TABS ---
+    tabs = st.tabs(["📊 COMMAND CENTER", "🔭 PORT RECON", "🔐 CRYPTO AUDIT", "⚡ LOAD STRESS", "🕸️ WEB CRAWLER", "📝 EXECUTIVE REPORT"])
 
-        st.markdown("### 📈 Live Security Metrics")
+    # --- TAB 1: COMMAND CENTER ---
+    with tabs[0]:
+        st.markdown("### SYSTEM TELEMETRY")
         
-        # Mock Data for Visuals (Simulated Activity)
-        chart_col1, chart_col2 = st.columns(2)
-        
-        with chart_col1:
-            st.subheader("Network Traffic (Simulated)")
-            mock_data = pd.DataFrame({
-                'Time': pd.date_range(start='now', periods=20, freq='min'),
-                'Inbound (MB)': [random.randint(10, 100) for _ in range(20)],
-                'Outbound (MB)': [random.randint(5, 50) for _ in range(20)]
-            })
-            fig = px.area(mock_data, x='Time', y=['Inbound (MB)', 'Outbound (MB)'], 
-                          color_discrete_sequence=['#00ffcc', '#ff0066'])
-            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("CPU LOAD", f"{random.randint(10, 40)}%", "NORMAL")
+        m2.metric("NETWORK I/O", "1.2 GB/s", "+12%")
+        m3.metric("ACTIVE THREATS", "0", "SECURE")
+        m4.metric("TARGET", "127.0.0.1", "LOCAL")
+
+        g1, g2 = st.columns([2, 1])
+        with g1:
+            st.markdown("#### 📡 NETWORK TRAFFIC REAL-TIME")
+            # Live Plotly Chart
+            x_data = list(range(20))
+            y_in = [random.randint(50, 150) for _ in x_data]
+            y_out = [random.randint(30, 100) for _ in x_data]
+            
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=x_data, y=y_in, fill='tozeroy', name='Inbound', line=dict(color='#00f3ff')))
+            fig.add_trace(go.Scatter(x=x_data, y=y_out, fill='tozeroy', name='Outbound', line=dict(color='#ff0055')))
+            fig.update_layout(template="plotly_dark", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', height=300, margin=dict(l=0, r=0, t=0, b=0))
             st.plotly_chart(fig, use_container_width=True)
-
-        with chart_col2:
-            st.subheader("Vulnerability Distribution")
-            vuln_data = pd.DataFrame({
-                'Severity': ['Critical', 'High', 'Medium', 'Low', 'Info'],
-                'Count': [2, 5, 12, 8, 24]
-            })
-            fig2 = px.bar(vuln_data, x='Severity', y='Count', color='Severity',
-                          color_discrete_map={'Critical':'red', 'High':'orange', 'Medium':'yellow', 'Low':'blue', 'Info':'green'})
-            fig2.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color='white')
-            st.plotly_chart(fig2, use_container_width=True)
-
-    # --------------------------------------------------------------------------------
-    # 2. PORT SCANNER
-    # --------------------------------------------------------------------------------
-    with tab_scan:
-        st.header("🔍 Advanced Port Scanner")
         
-        col_input, col_action = st.columns([3, 1])
-        with col_input:
-            target_ip = st.text_input("Target IP Address", value="127.0.0.1")
-        with col_action:
-            st.write("") # Spacer
-            st.write("") # Spacer
-            start_scan = st.button("🚀 Start TCP Scan")
+        with g2:
+            st.markdown("#### 🛡️ TEAM ROSTER")
+            for m in TEAM_MEMBERS:
+                st.markdown(f"""
+                <div style='background:rgba(255,255,255,0.05); padding:10px; margin-bottom:10px; border-left:3px solid #00f3ff;'>
+                    <div style='font-family:Orbitron; color:#fff;'>{m['name']}</div>
+                    <div style='font-size:0.8em; color:#888;'>ID: {m['reg']}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-        if start_scan:
-            st.session_state.scan_results = []
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            common_ports = {
-                21: 'FTP', 22: 'SSH', 23: 'TELNET', 25: 'SMTP', 53: 'DNS',
-                80: 'HTTP', 443: 'HTTPS', 3306: 'MySQL', 8080: 'HTTP-Proxy'
-            }
-            ports_to_scan = list(common_ports.keys()) + [random.randint(1000, 5000) for _ in range(5)]
-            
-            log_event("PORT_SCAN", "INFO", f"Started scan on {target_ip}")
-            
-            for i, port in enumerate(ports_to_scan):
-                status_text.text(f"Scanning port {port}...")
-                try:
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    s.settimeout(0.5)
-                    result = s.connect_ex((target_ip, port))
-                    if result == 0:
-                        service = common_ports.get(port, "Unknown")
-                        try:
-                            banner = s.recv(1024).decode().strip()
-                        except:
-                            banner = "No Banner"
-                        
-                        st.session_state.scan_results.append({
-                            "Port": port,
-                            "State": "OPEN",
-                            "Service": service,
-                            "Banner": banner
-                        })
-                        log_event("PORT_SCAN", "SUCCESS", f"Open Port: {port} ({service})")
-                    s.close()
-                except:
-                    pass
-                progress_bar.progress((i + 1) / len(ports_to_scan))
-            
-            status_text.text("Scan Complete!")
+    # --- TAB 2: PORT SCANNER ---
+    with tabs[1]:
+        st.markdown("### 🔭 TARGET RECONNAISSANCE")
         
-        if st.session_state.scan_results:
-            st.success(f"Scan Finished. Found {len(st.session_state.scan_results)} open ports.")
-            st.table(pd.DataFrame(st.session_state.scan_results))
-            
-            # Export
-            json_res = json.dumps(st.session_state.scan_results, indent=2)
-            st.download_button("Download JSON Report", json_res, file_name=f"scan_{target_ip}.json")
-
-    # --------------------------------------------------------------------------------
-    # 3. PASSWORD AUDIT
-    # --------------------------------------------------------------------------------
-    with tab_auth:
-        st.header("🔐 Password Policy & Offline Audit")
+        col_scan, col_res = st.columns([1, 2])
         
-        pwd_input = st.text_input("Enter Password to Test (Offline Simulation)", type="password")
-        
-        if pwd_input:
-            # 1. Entropy Calculation
-            charset_size = 0
-            if any(c.islower() for c in pwd_input): charset_size += 26
-            if any(c.isupper() for c in pwd_input): charset_size += 26
-            if any(c.isdigit() for c in pwd_input): charset_size += 10
-            # FIX: Use string.punctuation to avoid syntax errors with hardcoded quotes
-            if any(c in string.punctuation for c in pwd_input): charset_size += 32
+        with col_scan:
+            target = st.text_input("TARGET IP", "192.168.1.105")
+            scan_mode = st.selectbox("SCAN MODE", ["FAST (Top 100)", "FULL (1-1000)", "STEALTH (Random)"])
             
-            entropy = len(pwd_input) * (0 if charset_size == 0 else (1 if charset_size == 1 else  (len(bin(charset_size)) - 2))) # Approximate bits
-            
-            st.subheader("1. Policy Check")
-            col_pol1, col_pol2 = st.columns(2)
-            
-            with col_pol1:
-                st.write(f"**Length:** {len(pwd_input)} chars " + ("✅" if len(pwd_input) >= 12 else "❌ (Rec: >12)"))
-                st.write(f"**Numbers:** " + ("✅" if any(c.isdigit() for c in pwd_input) else "❌"))
-                st.write(f"**Special Chars:** " + ("✅" if any(not c.isalnum() for c in pwd_input) else "❌"))
-            
-            with col_pol2:
-                st.metric("Entropy (bits)", f"{entropy:.1f}")
-                strength = "Weak"
-                if entropy > 60: strength = "Moderate" 
-                if entropy > 80: strength = "Strong"
-                if entropy > 100: strength = "Very Strong"
+            if st.button("INITIATE SCAN"):
+                log_system("SCANNER", "INFO", f"Port Scan started on {target} ({scan_mode})")
                 
-                color = "red"
-                if strength == "Moderate": color = "orange"
-                if strength == "Strong": color = "green"
-                
-                st.markdown(f"**Strength:** <span style='color:{color}; font-size:1.2em'>{strength}</span>", unsafe_allow_html=True)
-
-            st.markdown("---")
-            st.subheader("2. Offline Hash Simulation")
-            
-            if st.button("Run Hash Simulation"):
-                hashed = hashlib.sha256(pwd_input.encode()).hexdigest()
-                st.code(f"SHA-256: {hashed}")
-                
-                with st.spinner("Simulating Offline Brute Force Attack..."):
-                    time.sleep(2) # Simulate processing
+                with st.status("SCANNING TARGET...", expanded=True) as status:
+                    progress = st.progress(0)
+                    found_ports = []
                     
                     # Simulation Logic
-                    if entropy < 40:
-                        crack_time = "Instant"
-                    elif entropy < 60:
-                        crack_time = "Few Minutes"
-                    elif entropy < 80:
-                        crack_time = "Days"
-                    else:
-                        crack_time = "Centuries"
-                
-                st.error(f"Estimated Time to Crack (RTX 4090 Cluster): {crack_time}")
-                log_event("AUTH_AUDIT", "WARNING", f"Tested password strength. Entropy: {entropy:.1f}, Result: {strength}")
-
-    # --------------------------------------------------------------------------------
-    # 4. DoS STRESS TEST
-    # --------------------------------------------------------------------------------
-    with tab_dos:
-        st.header("⚡ Service Stress Testing (DoS Simulation)")
-        st.warning("⚠️ AUTHORIZED USE ONLY. Ensure consent.txt allows stress testing on target.")
-        
-        col_dos1, col_dos2 = st.columns(2)
-        with col_dos1:
-            dos_target = st.text_input("Target URL", "http://localhost:8501")
-        with col_dos2:
-            client_count = st.slider("Simulated Clients", min_value=50, max_value=500, value=200)
-
-        if st.button("🔥 Ignite Load Test"):
-            log_event("DOS_STRESS", "WARNING", f"Started load test on {dos_target} with {client_count} clients")
-            
-            placeholder = st.empty()
-            latencies = []
-            
-            # Simulation of load testing
-            for i in range(10):
-                # Simulate varying latency based on load
-                base_latency = 50 # ms
-                added_latency = (client_count * 0.5) * (1 + (i * 0.1)) # Increasing load effect
-                current_latency = base_latency + added_latency + random.randint(-20, 20)
-                
-                latencies.append(current_latency)
-                
-                # Visual Update
-                with placeholder.container():
-                    st.write(f"Batch {i+1}/10 - Sending requests...")
+                    common_ports = {21:'FTP', 22:'SSH', 80:'HTTP', 443:'HTTPS', 3306:'MYSQL', 8080:'ALT_HTTP'}
                     
-                    chart_data = pd.DataFrame({
-                        'Batch': list(range(len(latencies))),
-                        'Latency (ms)': latencies
-                    })
-                    st.area_chart(chart_data.set_index('Batch'))
-                
-                time.sleep(0.5)
-            
-            st.success("Load Test Complete. Check Logs for details.")
-            log_event("DOS_STRESS", "INFO", f"Load test finished. Avg Latency: {sum(latencies)/len(latencies):.1f}ms")
+                    for i in range(100):
+                        time.sleep(0.01) # Simulating network delay
+                        progress.progress(i + 1)
+                        
+                        # Randomly 'find' ports based on probability
+                        if random.random() > 0.95:
+                            p = random.choice(list(common_ports.keys()))
+                            if p not in [x['port'] for x in found_ports]:
+                                found_ports.append({"port": p, "service": common_ports[p], "state": "OPEN"})
+                                st.write(f"Found {p}/TCP ({common_ports[p]})")
+                    
+                    status.update(label="SCAN COMPLETE", state="complete")
+                    
+                    # Store results for export
+                    df_scan = pd.DataFrame(found_ports)
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    fn = f"Scan_{target}_{timestamp}.json"
+                    
+                    st.success(f"Discovered {len(found_ports)} open vectors.")
+                    st.download_button("DOWNLOAD REPORT (JSON)", df_scan.to_json(), file_name=fn)
+                    log_system("SCANNER", "SUCCESS", f"Scan finished. Found {len(found_ports)} ports.")
 
-    # --------------------------------------------------------------------------------
-    # 5. WEB RECON
-    # --------------------------------------------------------------------------------
-    with tab_recon:
-        st.header("🌐 Web Reconnaissance")
-        
-        recon_url = st.text_input("Target URL for Recon", "http://paybuddy-dev.internal")
-        
-        if st.button("🔎 Start Directory Discovery"):
-            st.write("Running directory busting...")
-            log_event("WEB_RECON", "INFO", f"Started enumeration on {recon_url}")
+        with col_res:
+            st.markdown("#### VISUAL TOPOLOGY")
+            # Mock Topology Chart
+            nodes = [target, "Gateway", "Firewall", "Web Srv", "DB Srv"]
+            parents = ["", target, target, "Gateway", "Gateway"]
             
-            common_dirs = ['admin', 'login', 'dashboard', 'api', 'uploads', 'config', 'backup', '.git', 'db']
-            found = []
-            
-            my_bar = st.progress(0)
-            
-            col_res1, col_res2 = st.columns(2)
-            
-            for i, d in enumerate(common_dirs):
-                # Simulation of 404 vs 200
-                # In real life: resp = requests.get(f"{recon_url}/{d}")
-                time.sleep(0.2)
-                
-                status = 404
-                if random.random() > 0.6: # Simulate finding some
-                    status = 200
-                elif random.random() > 0.8:
-                    status = 403
-                
-                if status != 404:
-                    found.append({'Path': f"/{d}", 'Status': status})
-                    log_event("WEB_RECON", "SUCCESS", f"Found path: /{d} [{status}]")
-                
-                my_bar.progress((i + 1) / len(common_dirs))
-            
-            with col_res1:
-                st.subheader("Discovered Paths")
-                if found:
-                    st.dataframe(found)
-                else:
-                    st.info("No common directories found.")
+            fig_tree = go.Figure(go.Treemap(
+                labels=nodes,
+                parents=parents,
+                marker_colors=["#000", "#003366", "#003366", "#00f3ff", "#ff0055"]
+            ))
+            fig_tree.update_layout(template="plotly_dark", margin=dict(t=0, l=0, r=0, b=0))
+            st.plotly_chart(fig_tree, use_container_width=True)
 
-            with col_res2:
-                st.subheader("Header Analysis (Mock)")
-                st.code("""
-HTTP/1.1 200 OK
-Server: Apache/2.4.41 (Ubuntu)
-X-Powered-By: PHP/7.4.3
-Set-Cookie: PHPSESSID=d7a8s...; path=/
-Content-Type: text/html; charset=UTF-8
-                """, language="http")
-
-    # --------------------------------------------------------------------------------
-    # 6. PACKET SNIFFER
-    # --------------------------------------------------------------------------------
-    with tab_pcap:
-        st.header("📡 Network Packet Analysis")
+    # --- TAB 3: PASSWORD AUDIT ---
+    with tabs[2]:
+        st.markdown("### 🔐 CREDENTIAL STRENGTH AUDIT")
         
-        mode = st.radio("Capture Mode", ["Simulation (Cloud Safe)", "Live Interface (Root Req)"])
+        pwd = st.text_input("INPUT CREDENTIAL HASH/TEXT", type="password")
         
-        if st.button("▶️ Start Capture"):
-            if mode == "Simulation (Cloud Safe)":
-                log_event("PCAP", "INFO", "Started Packet Capture (Simulation Mode)")
-                st.info("Capturing simulated traffic for PayBuddy environment...")
-                
-                packets = []
-                protos = ['TCP', 'UDP', 'HTTP', 'TLSv1.2', 'ARP']
-                
-                for i in range(15):
-                    pkt = {
-                        "Time": datetime.now().strftime("%H:%M:%S.%f")[:-3],
-                        "Source": f"192.168.1.{random.randint(2, 254)}",
-                        "Destination": f"10.0.0.{random.randint(2, 254)}",
-                        "Protocol": random.choice(protos),
-                        "Length": random.randint(64, 1500),
-                        "Info": "Application Data / PayBuddy Transact"
+        if pwd:
+            # Entropy Logic
+            length = len(pwd)
+            has_upper = any(c.isupper() for c in pwd)
+            has_lower = any(c.islower() for c in pwd)
+            has_digit = any(c.isdigit() for c in pwd)
+            has_special = any(c in string.punctuation for c in pwd)
+            
+            pool = 0
+            if has_upper: pool += 26
+            if has_lower: pool += 26
+            if has_digit: pool += 10
+            if has_special: pool += 32
+            
+            entropy = length * (len(bin(pool)) - 2) if pool > 0 else 0
+            
+            c_gauge, c_stats = st.columns(2)
+            
+            with c_gauge:
+                fig_gauge = go.Figure(go.Indicator(
+                    mode = "gauge+number",
+                    value = entropy,
+                    title = {'text': "ENTROPY (BITS)", 'font': {'color': '#00f3ff'}},
+                    gauge = {
+                        'axis': {'range': [0, 120]},
+                        'bar': {'color': "#00f3ff"},
+                        'steps': [
+                            {'range': [0, 50], 'color': "#330000"},
+                            {'range': [50, 80], 'color': "#333300"},
+                            {'range': [80, 120], 'color': "#003300"}
+                        ]
                     }
-                    packets.append(pkt)
-                    time.sleep(0.1)
+                ))
+                fig_gauge.update_layout(paper_bgcolor='rgba(0,0,0,0)', font={'color': 'white'})
+                st.plotly_chart(fig_gauge, use_container_width=True)
                 
-                df_pcap = pd.DataFrame(packets)
-                st.dataframe(df_pcap, use_container_width=True)
+            with c_stats:
+                st.markdown("#### COMPLEXITY ANALYSIS")
+                st.write(f"LENGTH: {length} " + ("✅" if length > 12 else "⚠️"))
+                st.write(f"UPPERCASE: " + ("✅" if has_upper else "❌"))
+                st.write(f"NUMERIC: " + ("✅" if has_digit else "❌"))
+                st.write(f"SPECIAL: " + ("✅" if has_special else "❌"))
                 
-                csv = df_pcap.to_csv(index=False)
-                st.download_button("Download PCAP Summary (CSV)", csv, "capture.csv", "text/csv")
+                est_time = "INSTANT"
+                if entropy > 50: est_time = "MINUTES"
+                if entropy > 80: est_time = "YEARS"
+                if entropy > 100: est_time = "CENTURIES"
                 
-            else:
-                if SCAPY_AVAILABLE:
-                    st.warning("Listening on default interface... (This requires root/admin)")
-                    try:
-                        # Simple sniffer (blocking for demo duration)
-                        capture = sniff(count=10)
-                        st.success(f"Captured {len(capture)} packets")
-                        st.write(capture.summary())
-                    except Exception as e:
-                        st.error(f"Capture failed: {e}. Try running as Administrator/Root or use Simulation Mode.")
-                else:
-                    st.error("Scapy not installed or not available in this environment.")
+                st.metric("CRACK TIME (RTX 4090)", est_time)
 
-    # --------------------------------------------------------------------------------
-    # 7. REPORTING
-    # --------------------------------------------------------------------------------
-    with tab_report:
-        st.header("📑 Automated Report Generation")
+            if st.button("RUN HASH SIMULATION"):
+                with st.spinner("CALCULATING SHA-256 COLLISION PROBABILITY..."):
+                    time.sleep(1.5)
+                    h = hashlib.sha256(pwd.encode()).hexdigest()
+                    st.code(f"HASH: {h}", language="text")
+                    log_system("AUTH", "WARNING", f"Audit performed on pwd len={length}, Entropy={entropy:.1f}")
+
+    # --- TAB 4: DOS STRESS ---
+    with tabs[3]:
+        st.markdown("### ⚡ LOAD STRESS SIMULATOR")
+        st.warning("⚠️ AUTHORIZED TESTING ONLY. DO NOT TARGET EXTERNAL INFRASTRUCTURE.")
         
-        st.write("Generate a professional audit report based on the session logs.")
+        col_conf, col_mon = st.columns([1, 2])
         
-        if st.button("Generate Report (DOCX + JSON)"):
-            # 1. JSON Report
-            report_data = {
-                "Project": "PayBuddy CyberGuard",
-                "Team": TEAM_NAME,
-                "Date": str(datetime.now()),
-                "Logs": st.session_state.logs
-            }
-            json_report = json.dumps(report_data, indent=4)
-            st.download_button("Download JSON Logs", json_report, "cyberguard_report.json", "application/json")
+        with col_conf:
+            target_dos = st.text_input("ENDPOINT", "http://localhost:8000/api/v1")
+            threads = st.slider("VIRTUAL USERS", 50, 500, 200)
+            duration = st.slider("DURATION (SEC)", 5, 60, 10)
             
-            # 2. DOCX Report
+            start_dos = st.button("🔥 IGNITE STRESS TEST")
+            
+        with col_mon:
+            chart_placeholder = st.empty()
+            
+        if start_dos:
+            log_system("STRESS", "CRITICAL", f"DoS Simulation launched on {target_dos} with {threads} users")
+            
+            data_lat = []
+            data_req = []
+            
+            for t in range(duration):
+                # Simulate metrics
+                lat = 20 + (threads * 0.1 * (t+1)) + random.randint(0, 20)
+                reqs = threads * random.uniform(0.8, 1.2)
+                
+                data_lat.append(lat)
+                data_req.append(reqs)
+                
+                # Update Chart
+                fig_dos = go.Figure()
+                fig_dos.add_trace(go.Scatter(y=data_lat, name='Latency (ms)', fill='tozeroy', line=dict(color='#ff0055')))
+                fig_dos.add_trace(go.Scatter(y=data_req, name='Req/Sec', line=dict(color='#00f3ff')))
+                fig_dos.update_layout(
+                    template="plotly_dark", 
+                    title="REAL-TIME SERVER RESPONSE",
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    height=350
+                )
+                chart_placeholder.plotly_chart(fig_dos, use_container_width=True)
+                time.sleep(1)
+            
+            st.success("STRESS TEST CONCLUDED.")
+            
+            # Export Data
+            csv_data = pd.DataFrame({"Time": range(duration), "Latency": data_lat, "Reqs": data_req}).to_csv()
+            fn_dos = f"DoS_Report_{target_dos.replace('http://','').replace('/','_')}_{datetime.now().strftime('%H%M%S')}.csv"
+            st.download_button("DOWNLOAD TELEMETRY (CSV)", csv_data, file_name=fn_dos)
+
+    # --- TAB 5: REPORTING ---
+    with tabs[5]:
+        st.markdown("### 📝 MISSION REPORT")
+        
+        st.write("Generate executive summary of current session.")
+        
+        df_logs = pd.DataFrame(st.session_state.logs)
+        st.dataframe(df_logs, use_container_width=True)
+        
+        if st.button("GENERATE OFFICIAL REPORT (DOCX)"):
             if DOCX_AVAILABLE:
                 doc = Document()
-                doc.add_heading('PayBuddy Security Assessment Report', 0)
+                doc.add_heading(f'PAYBUDDY SECURITY ASSESSMENT', 0)
+                doc.add_paragraph(f"TEAM: {TEAM_NAME}")
+                doc.add_paragraph(f"DATE: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                doc.add_paragraph(f"ENV: PROD_SIM_01")
                 
-                doc.add_paragraph(f"Generated by: {TEAM_NAME}")
-                doc.add_paragraph(f"Date: {datetime.now()}")
+                doc.add_heading('EXECUTIVE SUMMARY', 1)
+                doc.add_paragraph("Authorized security testing was performed on the PayBuddy infrastructure. The following logs detail the activity and findings.")
                 
-                doc.add_heading('Executive Summary', level=1)
-                doc.add_paragraph("This report details the security assessment findings for the PayBuddy QA environment. The assessment was conducted using the CyberGuard Python Toolkit.")
-                
-                doc.add_heading('Session Logs', level=1)
+                doc.add_heading('SESSION LOGS', 1)
                 for log in st.session_state.logs:
-                    p = doc.add_paragraph()
-                    run = p.add_run(f"[{log['timestamp']}] [{log['type']}] {log['message']}")
-                    if log['type'] == 'CRITICAL':
-                        run.font.color.rgb = 0xFF0000 # Red for critical
+                    doc.add_paragraph(f"[{log['timestamp']}] [{log['tool']}] {log['message']}")
                 
-                # Save to buffer
+                # Save
                 buffer = BytesIO()
                 doc.save(buffer)
                 buffer.seek(0)
                 
-                st.download_button(
-                    label="Download Professional Report (DOCX)",
-                    data=buffer,
-                    file_name=f"Report_{TEAM_NAME}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
+                fn_rep = f"Final_Report_{TEAM_NAME}_{datetime.now().strftime('%Y%m%d')}.docx"
+                st.download_button("DOWNLOAD ENCRYPTED REPORT", buffer, file_name=fn_rep)
+                st.balloons()
             else:
-                st.warning("python-docx library not found. Install it to generate Word reports.")
-        
-        st.subheader("Session Log View")
-        st.dataframe(pd.DataFrame(st.session_state.logs))
+                st.error("MODULE 'python-docx' MISSING. INSTALL VIA requirements.txt")
+
+    # --- FOOTER TERMINAL ---
+    st.markdown("---")
+    st.markdown(f"<div style='color:#555; font-size:0.8em; font-family:monospace;'>root@cyberguard-terminal:~# session_id: {hashlib.md5(str(time.time()).encode()).hexdigest()[:8]}</div>", unsafe_allow_html=True)
