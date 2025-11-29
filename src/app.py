@@ -1,6 +1,6 @@
-# VERSION: V4.0_LIVING_EDITION
+# VERSION: V4.1_STABLE_EDITION
 # AUTHOR: CYBERGUARD TEAM
-# THEME: LIVING CYBER GRID + MULTI-PAGE
+# FIX: LOTTIE CRASH PREVENTION + TIMEOUTS
 
 import streamlit as st
 import pandas as pd
@@ -165,9 +165,12 @@ st.markdown("""
 # LOTTIE LOADERS
 def load_lottie_url(url: str):
     if not LOTTIE_AVAILABLE: return None
-    r = requests.get(url)
-    if r.status_code != 200: return None
-    return r.json()
+    try:
+        r = requests.get(url, timeout=3)
+        if r.status_code != 200: return None
+        return r.json()
+    except:
+        return None
 
 # Assets
 LOTTIE_DASH = "https://lottie.host/4b677103-6058-450f-a367-735954605178/wX4y8tH2r6.json" # Cyber Shield
@@ -251,7 +254,8 @@ if page == "DASHBOARD":
     with c_anim:
         if LOTTIE_AVAILABLE:
             lottie_json = load_lottie_url(LOTTIE_DASH)
-            st_lottie(lottie_json, height=120)
+            if lottie_json:
+                st_lottie(lottie_json, height=120)
 
     # Metrics Row
     m1, m2, m3, m4 = st.columns(4)
@@ -279,7 +283,9 @@ elif page == "PORT SCANNER":
         st.title("PORT RECONNAISSANCE")
     with c_anim:
         if LOTTIE_AVAILABLE:
-            st_lottie(load_lottie_url(LOTTIE_SCAN), height=100)
+            lottie_json = load_lottie_url(LOTTIE_SCAN)
+            if lottie_json:
+                st_lottie(lottie_json, height=100)
     
     col1, col2 = st.columns([1, 2])
     with col1:
@@ -320,7 +326,9 @@ elif page == "PASSWORD AUDIT":
         st.title("CREDENTIAL AUDIT")
     with c_anim:
         if LOTTIE_AVAILABLE:
-            st_lottie(load_lottie_url(LOTTIE_PASS), height=100)
+            lottie_json = load_lottie_url(LOTTIE_PASS)
+            if lottie_json:
+                st_lottie(lottie_json, height=100)
 
     pwd = st.text_input("ENTER PASSWORD / HASH", type="password")
     
@@ -349,7 +357,9 @@ elif page == "LOAD STRESSER":
         st.title("DoS / STRESS TEST")
     with c_anim:
         if LOTTIE_AVAILABLE:
-            st_lottie(load_lottie_url(LOTTIE_DOS), height=100)
+            lottie_json = load_lottie_url(LOTTIE_DOS)
+            if lottie_json:
+                st_lottie(lottie_json, height=100)
             
     st.warning("⚠️ AUTHORIZED TARGETS ONLY")
     
@@ -386,7 +396,9 @@ elif page == "WEB RECON":
         st.title("WEB CRAWLER")
     with c_anim:
         if LOTTIE_AVAILABLE:
-            st_lottie(load_lottie_url(LOTTIE_WEB), height=100)
+            lottie_json = load_lottie_url(LOTTIE_WEB)
+            if lottie_json:
+                st_lottie(lottie_json, height=100)
             
     url = st.text_input("TARGET URL", "http://paybuddy-dev.internal")
     
