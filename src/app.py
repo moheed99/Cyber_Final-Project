@@ -13,7 +13,7 @@ import io
 # PAGE CONFIGURATION & THEME ENGINE
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="PayBuddy CyberGuard V8.0",
+    page_title="PayBuddy CyberGuard V8.1",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -77,6 +77,39 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
     }
 
+    /* TEAM CARDS IN SIDEBAR */
+    .profile-card {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+        border: 1px solid #334155;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: border-color 0.3s;
+    }
+    .profile-card:hover {
+        border-color: var(--neon-blue);
+    }
+    .profile-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #06b6d4, #2563eb);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 0 10px rgba(6,182,212,0.5);
+    }
+    .profile-info {
+        line-height: 1.2;
+    }
+    .profile-name { color: #f8fafc; font-weight: bold; font-size: 0.85rem; }
+    .profile-reg { color: #94a3b8; font-size: 0.75rem; font-family: monospace; }
+
     /* INPUT FIELDS */
     .stTextInput>div>div>input, .stSelectbox>div>div>div {
         background-color: #1e293b !important;
@@ -138,7 +171,7 @@ def log_action(tool, message, status="INFO"):
 # -----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("## 🛡️ CYBERGUARD")
-    st.markdown("<div style='font-size: 0.8rem; color: #64748b; margin-bottom: 20px;'>PAYBUDDY SECURITY SUITE V8.0</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 0.8rem; color: #64748b; margin-bottom: 20px;'>PAYBUDDY SECURITY SUITE V8.1</div>", unsafe_allow_html=True)
     
     page = st.radio("SELECT MODULE", [
         "Dashboard", 
@@ -152,7 +185,24 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown("### 👤 OPERATORS")
-    st.info("Moheed Ul Hassan\\nAli Abbas\\nAbdur Rehman")
+    
+    # RENDER TEAM MEMBERS AS CARDS
+    members = [
+        {"name": "Moheed Ul Hassan", "reg": "22I-7451"},
+        {"name": "Ali Abbas", "reg": "22I-2285"},
+        {"name": "Abdur Rehman", "reg": "22I-2291"}
+    ]
+    
+    for m in members:
+        st.markdown(f"""
+        <div class="profile-card">
+            <div class="profile-icon">{m['name'][0]}</div>
+            <div class="profile-info">
+                <div class="profile-name">{m['name']}</div>
+                <div class="profile-reg">{m['reg']}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     
     if st.button("🔴 EMERGENCY STOP"):
         st.session_state.logs = []
@@ -170,7 +220,7 @@ if page == "Dashboard":
         st.markdown(f"""<div class='cyber-card'>
             <h3>SYSTEM STATUS</h3>
             <h1 class='status-online'>ONLINE</h1>
-            <div style='font-size:0.8rem; color:gray'>v8.0.1 STABLE</div>
+            <div style='font-size:0.8rem; color:gray'>v8.1.0 STABLE</div>
         </div>""", unsafe_allow_html=True)
     with c2:
         st.markdown(f"""<div class='cyber-card'>
@@ -512,7 +562,7 @@ elif page == "Reports":
         # Generate Text Report
         report_content = f"""
 ================================================================================
-PAYBUDDY CYBERGUARD V8.0 - SECURITY ASSESSMENT REPORT
+PAYBUDDY CYBERGUARD V8.1 - SECURITY ASSESSMENT REPORT
 ================================================================================
 Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Operator: TEAM CYBERGUARD
