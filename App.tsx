@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
@@ -10,7 +11,8 @@ import {
   LogOut, 
   ShieldCheck, 
   Menu,
-  Download
+  Download,
+  Code
 } from 'lucide-react';
 import IdentityGate from './components/IdentityGate';
 import Dashboard from './components/Dashboard';
@@ -19,6 +21,7 @@ import PasswordAuditor from './components/PasswordAuditor';
 import StressTester from './components/StressTester';
 import WebEnum from './components/WebEnum';
 import PacketSniffer from './components/PacketSniffer';
+import CodeViewer from './components/CodeViewer';
 import { LogEntry, ToolType, TEAM_MEMBERS, TEAM_NAME } from './types';
 import { generateSecurityReport } from './services/geminiService';
 
@@ -74,6 +77,8 @@ const App: React.FC = () => {
         return <WebEnum addLog={addLog} />;
       case ToolType.PACKET_SNIFFER:
         return <PacketSniffer addLog={addLog} />;
+      case ToolType.SOURCE_CODE:
+        return <CodeViewer />;
       case ToolType.REPORTING:
         return (
           <div className="h-full flex flex-col gap-4 p-4">
@@ -134,13 +139,15 @@ const App: React.FC = () => {
     }
   };
 
-  const navItem = (tool: ToolType, label: string, icon: React.ReactNode) => (
+  const navItem = (tool: ToolType, label: string, icon: React.ReactNode, special = false) => (
     <button
       onClick={() => setActiveTool(tool)}
       className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${
         activeTool === tool
           ? 'bg-blue-600/10 text-blue-400 border-r-2 border-blue-500'
-          : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+          : special 
+            ? 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 mt-6 border-t border-slate-800' 
+            : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
       }`}
     >
       {icon}
@@ -170,6 +177,9 @@ const App: React.FC = () => {
            {navItem(ToolType.PACKET_SNIFFER, 'Packet Sniffer', <Radio className="w-5 h-5" />)}
            <div className="px-4 py-2 text-xs font-bold text-slate-600 uppercase mt-4 mb-2">Analysis</div>
            {navItem(ToolType.REPORTING, 'Reporting', <FileText className="w-5 h-5" />)}
+           
+           {/* DOWNLOAD CODE BUTTON */}
+           {navItem(ToolType.SOURCE_CODE, 'Download Code', <Code className="w-5 h-5" />, true)}
         </nav>
 
         <div className="p-4 border-t border-slate-800">
