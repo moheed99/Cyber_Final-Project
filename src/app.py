@@ -547,7 +547,6 @@ const CodeViewer: React.FC = () => {
             
             <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 text-sm">
                 <CheckCircle className="w-4 h-4 text-emerald-500" />
-                <span>Verified Clean Code • UTF-8 Encoded • Streamlit Ready</span>
             </div>
         </div>
     );
