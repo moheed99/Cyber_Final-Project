@@ -1,7 +1,3 @@
- ==============================================================================
-# PROJECT: PAYBUDDY CYBERGUARD TOOLKIT V5.0 ULTIMATE
-# TEAM: CYBERGUARD (Moheed Ul Hassan, Ali Abbas, Abdur Rehman)
-# ==============================================================================
 
 import streamlit as st
 import socket
