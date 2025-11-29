@@ -1,419 +1,600 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Download, Copy, CheckCircle } from 'lucide-react';
 
-const PYTHON_CODE = `# ==============================================================================
-# PROJECT: PAYBUDDY CYBERGUARD TOOLKIT V6.0 (TWIN EDITION)
-# TEAM: CYBERGUARD (Moheed Ul Hassan, Ali Abbas, Abdur Rehman)
-# ==============================================================================
-
-import streamlit as st
+// EXACT COPY OF THE V8.0 PYTHON CODE FOR DOWNLOAD - DOUBLE ESCAPED FOR JS
+const PYTHON_CODE = `import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 import time
 import random
-import math
 import string
+import json
 from datetime import datetime
+import io
 
-# ------------------------------------------------------------------------------
-# 1. CONFIGURATION & TWIN-THEME ENGINE
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# PAGE CONFIGURATION & THEME ENGINE
+# -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="CyberGuard V6.0",
+    page_title="PayBuddy CyberGuard V8.0",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# INJECT CSS TO MATCH REACT DASHBOARD EXACTLY
+# NEON CYBERPUNK THEME INJECTION
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap');
+    
+    /* GLOBAL COLORS & FONTS */
+    :root {
+        --bg-dark: #020617;
+        --bg-card: #0f172a;
+        --text-main: #f8fafc;
+        --text-dim: #94a3b8;
+        --neon-blue: #00f3ff;
+        --neon-red: #ff0055;
+        --neon-green: #10b981;
+        --neon-purple: #bd00ff;
+        --border-color: #1e293b;
+    }
 
-    /* MAIN BACKGROUND - SLATE 950 */
+    /* MAIN CONTAINER */
     .stApp {
-        background-color: #020617;
-        background-image: 
-            linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-        background-size: 40px 40px;
-        color: #f8fafc;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'JetBrains Mono', monospace;
     }
 
-    /* SIDEBAR - SLATE 900 */
+    /* HEADERS - ORBITRON FONT */
+    h1, h2, h3, .orbitron {
+        font-family: 'Orbitron', sans-serif !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+    }
+    
+    h1 { color: var(--text-main); font-weight: 900; }
+    h2 { color: var(--neon-blue); border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+    h3 { color: var(--text-dim); font-size: 1.2rem; }
+
+    /* SIDEBAR STYLING */
     [data-testid="stSidebar"] {
-        background-color: #0f172a;
-        border-right: 1px solid #1e293b;
+        background-color: #0b1121;
+        border-right: 1px solid var(--border-color);
     }
-
-    /* FONTS */
-    h1, h2, h3, .big-font { font-family: 'Orbitron', sans-serif !important; }
-    p, div, span, button, input { font-family: 'JetBrains Mono', monospace !important; }
-
-    /* CARDS & CONTAINERS - GLASSMORPHISM */
-    .css-card {
-        background: rgba(15, 17, 42, 0.6);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(148, 163, 184, 0.1);
+    
+    /* CUSTOM CARDS */
+    .cyber-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
         border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    }
+    .cyber-card:hover {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
     }
 
-    /* METRIC HIGHLIGHTS */
-    .metric-value { font-size: 24px; font-weight: bold; color: white; }
-    .metric-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
-    
-    /* NEON ACCENTS */
-    .neon-text-blue { color: #00f3ff; text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
-    .neon-text-pink { color: #ec4899; text-shadow: 0 0 10px rgba(236, 72, 153, 0.3); }
-    .neon-border { border: 1px solid #00f3ff; box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); }
-
-    /* CUSTOM INPUTS */
-    input[type="text"], input[type="password"] {
+    /* INPUT FIELDS */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div {
         background-color: #1e293b !important;
+        color: var(--neon-blue) !important;
         border: 1px solid #334155 !important;
-        color: white !important;
-        border-radius: 6px !important;
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', monospace;
     }
 
     /* BUTTONS */
-    div.stButton > button {
+    .stButton>button {
         background: linear-gradient(45deg, #0f172a, #1e293b);
-        border: 1px solid #3b82f6;
-        color: #60a5fa;
+        color: var(--neon-blue);
+        border: 1px solid var(--neon-blue);
+        border-radius: 6px;
         font-weight: bold;
-        transition: all 0.3s ease;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        transition: all 0.3s;
+        width: 100%;
     }
-    div.stButton > button:hover {
-        background: #2563eb;
-        color: white;
-        box-shadow: 0 0 15px rgba(37, 99, 235, 0.5);
-        border-color: #2563eb;
+    .stButton>button:hover {
+        background: var(--neon-blue);
+        color: #000;
+        box-shadow: 0 0 20px var(--neon-blue);
     }
+
+    /* ALERTS & STATUS */
+    .status-online { color: var(--neon-green); font-weight: bold; }
+    .status-offline { color: var(--neon-red); font-weight: bold; }
+    
+    /* DATAFRAMES */
+    .stDataFrame { border: 1px solid var(--border-color); border-radius: 8px; }
+    
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------------------------------
-# 2. SESSION STATE
-# ------------------------------------------------------------------------------
-if 'logs' not in st.session_state: st.session_state['logs'] = []
-if 'scan_results' not in st.session_state: st.session_state['scan_results'] = []
-if 'auth' not in st.session_state: st.session_state.auth = False
+# -----------------------------------------------------------------------------
+# SESSION STATE MANAGEMENT
+# -----------------------------------------------------------------------------
+if 'logs' not in st.session_state:
+    st.session_state.logs = []
+if 'port_results' not in st.session_state:
+    st.session_state.port_results = []
+if 'web_recon_results' not in st.session_state:
+    st.session_state.web_recon_results = []
+if 'packets' not in st.session_state:
+    st.session_state.packets = []
+if 'dos_data' not in st.session_state:
+    st.session_state.dos_data = []
 
-def add_log(tool, msg):
-    ts = datetime.now().strftime("%H:%M:%S")
-    st.session_state['logs'].append(f"[{ts}] [{tool}] {msg}")
+def log_action(tool, message, status="INFO"):
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    entry = {"Time": timestamp, "Tool": tool, "Status": status, "Message": message}
+    st.session_state.logs.append(entry)
 
-# ------------------------------------------------------------------------------
-# 3. IDENTITY GATE
-# ------------------------------------------------------------------------------
-if not st.session_state.auth:
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        st.markdown("""
-        <div style="text-align: center; margin-top: 100px;">
-            <div style="font-size: 60px;">🛡️</div>
-            <h1 style="color: white; margin-bottom: 0;">CYBERGUARD</h1>
-            <p style="color: #64748b; margin-top: 5px;">RESTRICTED ACCESS // AUTHORIZATION REQUIRED</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("<div class='css-card'>", unsafe_allow_html=True)
-        st.info("Identity File: **Verified (Moheed, Ali, Abdur)**")
-        st.info("Consent File: **Authorized (PayBuddy Dev)**")
-        
-        if st.button("AUTHENTICATE SYSTEM", use_container_width=True):
-            with st.spinner("Decrypting System Core..."):
-                time.sleep(1.5)
-                st.session_state.auth = True
-                st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-    st.stop()
-
-# ------------------------------------------------------------------------------
-# 4. DASHBOARD UI
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# SIDEBAR NAVIGATION
+# -----------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("""
-    <div style="padding: 10px 0;">
-        <h2 style="color: #00f3ff; margin:0;">CYBERGUARD</h2>
-        <p style="font-size: 10px; color: #64748b; letter-spacing: 2px;">TOOLKIT V6.0</p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("## 🛡️ CYBERGUARD")
+    st.markdown("<div style='font-size: 0.8rem; color: #64748b; margin-bottom: 20px;'>PAYBUDDY SECURITY SUITE V8.0</div>", unsafe_allow_html=True)
+    
+    page = st.radio("SELECT MODULE", [
+        "Dashboard", 
+        "Port Scanner", 
+        "Password Auditor", 
+        "Load / DoS Stresser", 
+        "Web Recon", 
+        "Packet Sniffer", 
+        "Reports"
+    ])
     
     st.markdown("---")
-    page = st.radio("NAVIGATION", ["Dashboard", "Port Scanner", "Password Auditor", "Load Stresser", "Web Recon", "Packet Sniffer", "Reports"])
-    st.markdown("---")
+    st.markdown("### 👤 OPERATORS")
+    st.info("Moheed Ul Hassan\\\\nAli Abbas\\\\nAbdur Rehman")
     
-    # Team Roster
-    st.markdown("<div style='font-size: 10px; color: #64748b; font-weight: bold; margin-bottom: 10px;'>OPERATORS</div>", unsafe_allow_html=True)
-    for member in ["Moheed Ul Hassan", "Ali Abbas", "Abdur Rehman"]:
-        st.markdown(f"<div style='color: #94a3b8; font-size: 12px;'>• {member}</div>", unsafe_allow_html=True)
+    if st.button("🔴 EMERGENCY STOP"):
+        st.session_state.logs = []
+        st.experimental_rerun()
 
-    if st.button("LOGOUT", use_container_width=True):
-        st.session_state.auth = False
-        st.rerun()
-
-# --- HEADER ---
-st.markdown(f"""
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px;">
-    <h2 style="margin:0; font-size: 24px;">{page.upper()}</h2>
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <span style="height: 8px; width: 8px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #10b981;"></span>
-        <span style="color: #10b981; font-size: 12px; font-weight: bold;">SYSTEM ONLINE</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ------------------------------------------------------------------------------
-# PAGE: DASHBOARD
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# MODULE: DASHBOARD
+# -----------------------------------------------------------------------------
 if page == "Dashboard":
-    # 4 Top Stats
+    st.title("COMMAND CENTER")
+    
+    # TOP STATS ROW
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown("""<div class="css-card"><div class="metric-label">Security Status</div><div class="metric-value neon-text-blue">SECURE</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class='cyber-card'>
+            <h3>SYSTEM STATUS</h3>
+            <h1 class='status-online'>ONLINE</h1>
+            <div style='font-size:0.8rem; color:gray'>v8.0.1 STABLE</div>
+        </div>""", unsafe_allow_html=True)
     with c2:
-        st.markdown(f"""<div class="css-card"><div class="metric-label">Active Agents</div><div class="metric-value">3</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class='cyber-card'>
+            <h3>ACTIVE SCANS</h3>
+            <h1 style='color:var(--neon-blue)'>0</h1>
+            <div style='font-size:0.8rem; color:gray'>IDLE</div>
+        </div>""", unsafe_allow_html=True)
     with c3:
-        st.markdown("""<div class="css-card"><div class="metric-label">Env Status</div><div class="metric-value neon-text-pink">CONNECTED</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class='cyber-card'>
+            <h3>LOG EVENTS</h3>
+            <h1 style='color:var(--neon-purple)'>{len(st.session_state.logs)}</h1>
+            <div style='font-size:0.8rem; color:gray'>SESSION</div>
+        </div>""", unsafe_allow_html=True)
     with c4:
-        st.markdown("""<div class="css-card"><div class="metric-label">CPU Load</div><div class="metric-value">14%</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class='cyber-card'>
+            <h3>THREAT LEVEL</h3>
+            <h1 style='color:var(--neon-green)'>LOW</h1>
+            <div style='font-size:0.8rem; color:gray'>NOMINAL</div>
+        </div>""", unsafe_allow_html=True)
 
-    # Charts
-    col_main, col_side = st.columns([2, 1])
+    # LIVE TRAFFIC GRAPH (SIMULATED)
+    st.markdown("### 📡 NETWORK TRAFFIC OVERVIEW")
+    traffic_data = pd.DataFrame({
+        'Time': [f"{i}:00" for i in range(24)],
+        'Inbound': [random.randint(10, 100) for _ in range(24)],
+        'Outbound': [random.randint(5, 80) for _ in range(24)]
+    })
     
-    with col_main:
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        st.markdown('<h3 style="font-size: 16px; margin-bottom: 15px;">NETWORK_TRAFFIC_OP</h3>', unsafe_allow_html=True)
-        
-        # Plotly Chart
-        df = pd.DataFrame({
-            'Time': list(range(20)),
-            'Inbound': [random.randint(20, 80) for _ in range(20)],
-            'Outbound': [random.randint(10, 60) for _ in range(20)]
-        })
-        
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df['Time'], y=df['Inbound'], fill='tozeroy', name='Inbound', line=dict(color='#06b6d4')))
-        fig.add_trace(go.Scatter(x=df['Time'], y=df['Outbound'], fill='tozeroy', name='Outbound', line=dict(color='#ec4899')))
-        fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=0, r=0, t=0, b=0),
-            height=250,
-            showlegend=False,
-            font=dict(color='#94a3b8')
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=traffic_data['Time'], y=traffic_data['Inbound'], fill='tozeroy', name='Inbound (MB/s)', line=dict(color='#00f3ff')))
+    fig.add_trace(go.Scatter(x=traffic_data['Time'], y=traffic_data['Outbound'], fill='tozeroy', name='Outbound (MB/s)', line=dict(color='#ff0055')))
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color='white'),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=True, gridcolor='#334155'),
+        height=350
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # RECENT LOGS
+    st.markdown("### 📝 RECENT SYSTEM LOGS")
+    if st.session_state.logs:
+        st.dataframe(pd.DataFrame(st.session_state.logs).tail(5), use_container_width=True)
+    else:
+        st.info("System Initialized. Awaiting Input...")
 
-    with col_side:
-        st.markdown('<div class="css-card" style="height: 340px;">', unsafe_allow_html=True)
-        st.markdown('<h3 style="font-size: 16px; margin-bottom: 15px;">THREAT_ANALYSIS</h3>', unsafe_allow_html=True)
-        st.progress(85)
-        st.caption("Port Security")
-        st.progress(45)
-        st.caption("Auth Strength")
-        st.progress(62)
-        st.caption("Web Exposure")
-        st.progress(15)
-        st.caption("DoS Risk")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# ------------------------------------------------------------------------------
-# PAGE: PORT SCANNER
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# MODULE: PORT SCANNER
+# -----------------------------------------------------------------------------
 elif page == "Port Scanner":
-    st.markdown('<div class="css-card">', unsafe_allow_html=True)
-    col_input, col_btn = st.columns([3, 1])
-    with col_input:
-        target = st.text_input("Target IP", "192.168.1.105")
-    with col_btn:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("START SCAN", use_container_width=True):
-            st.session_state['scan_results'] = []
-            add_log("SCAN", f"Started scan on {target}")
-            
-            # Simulation
-            bar = st.progress(0)
-            status = st.empty()
-            
-            ports = [21, 22, 80, 443, 3306]
-            services = ["FTP", "SSH", "HTTP", "HTTPS", "MySQL"]
-            
-            for i in range(100):
-                time.sleep(0.02)
-                bar.progress(i+1)
-                status.text(f"Scanning port {i*10}...")
-                
-                if i % 20 == 0:
-                    idx = i // 20
-                    if idx < len(ports):
-                        res = {"Port": ports[idx], "Service": services[idx], "State": "OPEN", "Version": f"v{random.randint(1,9)}.0"}
-                        st.session_state['scan_results'].append(res)
-            
-            status.text("Scan Complete.")
-            bar.empty()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if st.session_state['scan_results']:
-        st.markdown("### DISCOVERED SERVICES")
-        st.dataframe(pd.DataFrame(st.session_state['scan_results']), use_container_width=True)
-
-# ------------------------------------------------------------------------------
-# PAGE: PASSWORD AUDITOR
-# ------------------------------------------------------------------------------
-elif page == "Password Auditor":
-    c1, c2 = st.columns(2)
+    st.title("NETWORK PORT SCANNER")
+    st.markdown("TCP Connect Scan • Service Detection • Banner Grabbing")
     
-    with c1:
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        st.markdown("### POLICY AUDIT")
-        pwd = st.text_input("Test Password", type="password")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        target = st.text_input("TARGET IP / HOSTNAME", "192.168.1.105")
+    with col2:
+        st.text("") # spacer
+        st.text("")
+        scan_btn = st.button("INITIATE SCAN")
         
-        entropy = 0
-        if pwd:
-            pool = 0
-            if any(c.islower() for c in pwd): pool += 26
-            if any(c.isupper() for c in pwd): pool += 26
-            if any(c.isdigit() for c in pwd): pool += 10
-            if any(c in string.punctuation for c in pwd): pool += 32
-            entropy = math.log2(pool ** len(pwd)) if pool > 0 else 0
+    if scan_btn:
+        log_action("PORT_SCAN", f"Starting scan on {target}")
+        st.session_state.port_results = []
+        
+        progress = st.progress(0)
+        status = st.empty()
+        
+        common_ports = {
+            21: 'FTP', 22: 'SSH', 23: 'Telnet', 25: 'SMTP', 53: 'DNS', 80: 'HTTP', 
+            110: 'POP3', 139: 'NetBIOS', 443: 'HTTPS', 445: 'SMB', 3306: 'MySQL', 3389: 'RDP'
+        }
+        
+        # Simulating a scan with "Discovery" logic
+        for i in range(100):
+            time.sleep(0.02)
+            progress.progress(i + 1)
             
-            st.metric("Entropy", f"{entropy:.1f} bits")
-            
-            color = "red"
-            if entropy > 50: color = "orange"
-            if entropy > 80: color = "yellow"
-            if entropy > 120: color = "green"
-            
-            st.markdown(f"Strength: <span style='color:{color}; font-weight:bold'>{color.upper()}</span>", unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with c2:
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        st.markdown("### OFFLINE ATTACK SIM")
-        if st.button("RUN HASHCAT SIMULATION", use_container_width=True):
-            if not pwd:
-                st.error("Enter password first.")
-            else:
-                with st.status("Initializing GPU Cluster..."):
-                    time.sleep(1)
-                    st.write("Loading Hashes...")
-                    time.sleep(1)
-                    st.write("Brute-forcing SHA-256...")
-                    time.sleep(1)
+            # 30% chance to find an open port from our list
+            if i % 10 == 0 and random.random() > 0.4:
+                # Pick a random port from common list to simulate finding it
+                port = random.choice(list(common_ports.keys()))
+                service = common_ports[port]
+                version = f"v{random.randint(1,5)}.{random.randint(0,9)}"
                 
-                seconds = (2**entropy) / 10000000000
-                st.success(f"Estimated Crack Time: {seconds:.2f} seconds (Supercomputer)")
-        st.markdown('</div>', unsafe_allow_html=True)
+                # Check if we already found this port to avoid dupes in this sim
+                if not any(d['Port'] == port for d in st.session_state.port_results):
+                    st.session_state.port_results.append({
+                        "Port": port,
+                        "State": "OPEN",
+                        "Service": service,
+                        "Banner": f"{service} {version} (Ubuntu)",
+                        "Risk": "HIGH" if port in [21, 23, 445] else "LOW"
+                    })
+                    status.warning(f"⚠️ DISCOVERED OPEN PORT: {port}/{service}")
+        
+        status.success(f"SCAN COMPLETE. Found {len(st.session_state.port_results)} open ports.")
+        log_action("PORT_SCAN", f"Scan finished. Found {len(st.session_state.port_results)} ports.", "SUCCESS")
 
-# ------------------------------------------------------------------------------
-# PAGE: REPORTS
-# ------------------------------------------------------------------------------
-elif page == "Reports":
-    st.markdown('<div class="css-card">', unsafe_allow_html=True)
-    st.markdown("### GENERATE REPORT")
-    st.write("Compile logs from Port Scanner, Password Auditor, and Web Recon into a final PDF/Text report.")
+    if st.session_state.port_results:
+        df = pd.DataFrame(st.session_state.port_results)
+        st.dataframe(df, use_container_width=True)
+        
+        # DOWNLOAD BUTTON
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="💾 DOWNLOAD SCAN REPORT (CSV)",
+            data=csv,
+            file_name=f"port_scan_{target}_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv"
+        )
+
+# -----------------------------------------------------------------------------
+# MODULE: PASSWORD AUDITOR
+# -----------------------------------------------------------------------------
+elif page == "Password Auditor":
+    st.title("PASSWORD FORENSICS")
+    st.markdown("Entropy Calculation • Dictionary Attack Simulation • NIST Compliance")
     
-    if st.button("GENERATE EXECUTIVE REPORT"):
-        report = f"""
-PAYBUDDY SECURITY REPORT
-Date: {datetime.now()}
-Team: CyberGuard
-------------------------
-Logs:
-{len(st.session_state['logs'])} events recorded.
+    pwd = st.text_input("ENTER PASSWORD TO AUDIT", type="password")
+    
+    if pwd:
+        st.markdown("---")
+        c1, c2 = st.columns(2)
+        
+        # ANALYSIS LOGIC
+        length = len(pwd)
+        has_lower = any(c.islower() for c in pwd)
+        has_upper = any(c.isupper() for c in pwd)
+        has_digits = any(c.isdigit() for c in pwd)
+        has_special = any(c in string.punctuation for c in pwd)
+        
+        pool = 0
+        if has_lower: pool += 26
+        if has_upper: pool += 26
+        if has_digits: pool += 10
+        if has_special: pool += 32
+        
+        entropy = length * (pool.bit_length() if pool > 0 else 0)
+        
+        # ESTIMATION
+        crack_time_md5 = "Instant"
+        if entropy > 40: crack_time_md5 = "3 Minutes"
+        if entropy > 60: crack_time_md5 = "2 Days"
+        if entropy > 80: crack_time_md5 = "4 Years"
+        if entropy > 100: crack_time_md5 = "Centuries"
+        
+        with c1:
+            st.markdown("### 📊 ENTROPY SCORE")
+            st.metric("Bits of Entropy", f"{entropy:.2f}")
+            
+            if entropy < 50:
+                st.error("RATING: WEAK")
+                st.progress(0.3)
+            elif entropy < 80:
+                st.warning("RATING: MODERATE")
+                st.progress(0.6)
+            else:
+                st.success("RATING: STRONG")
+                st.progress(1.0)
+                
+        with c2:
+            st.markdown("### 🔓 TIME TO CRACK")
+            st.write(f"**MD5 Hash (GPU Cluster):** {crack_time_md5}")
+            st.write(f"**SHA-256 (Supercomputer):** {crack_time_md5}") # Simplified for demo
+            
+            st.markdown("### ✅ COMPLIANCE")
+            st.checkbox("Length > 12", value=length >= 12, disabled=True)
+            st.checkbox("Contains Numbers", value=has_digits, disabled=True)
+            st.checkbox("Contains Special Chars", value=has_special, disabled=True)
+            st.checkbox("Mixed Case", value=(has_lower and has_upper), disabled=True)
 
-Scan Results:
-{pd.DataFrame(st.session_state['scan_results']).to_markdown() if st.session_state['scan_results'] else "No Data"}
+        log_action("AUTH_AUDIT", f"Audited password length {length}. Entropy: {entropy:.2f}")
+
+        # REPORT GENERATION
+        audit_report = f"""
+        PAYBUDDY PASSWORD AUDIT REPORT
+        ------------------------------
+        Analyzed String Length: {length}
+        Entropy: {entropy:.2f} bits
+        Character Set Size: {pool}
+        
+        Estimated Crack Times:
+        - GPU Cluster: {crack_time_md5}
+        
+        Compliance:
+        - NIST Guidelines: {'PASS' if entropy > 60 else 'FAIL'}
         """
-        st.text_area("Report Preview", report, height=300)
-        st.download_button("Download Report", report, "CyberGuard_Report.txt")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.download_button("💾 DOWNLOAD AUDIT CERTIFICATE", audit_report, "password_audit.txt")
 
-# ------------------------------------------------------------------------------
-# OTHER PAGES (Simple placeholders for brevity)
-# ------------------------------------------------------------------------------
-elif page == "Load Stresser":
-    st.info("Load Stresser Module Loaded. Configure target and threads.")
-    st.button("Start Stress Test")
+# -----------------------------------------------------------------------------
+# MODULE: DoS STRESSER
+# -----------------------------------------------------------------------------
+elif page == "Load / DoS Stresser":
+    st.title("LOAD & STRESS TESTING")
+    st.markdown("Endpoint Stress Test • Latency Monitoring • Packet Flood Simulation")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        target_url = st.text_input("TARGET ENDPOINT", "http://paybuddy-dev.internal/api/v1")
+    with col2:
+        clients = st.slider("VIRTUAL BOTNET SIZE", 100, 10000, 1000)
+        
+    if st.button("🚀 LAUNCH STRESS TEST"):
+        log_action("DOS_ATTACK", f"Launching flood on {target_url} with {clients} bots", "WARNING")
+        
+        chart_spot = st.empty()
+        st.session_state.dos_data = []
+        
+        # LIVE ATTACK LOOP
+        for i in range(30): # 30 seconds simulation
+            time.sleep(0.5)
+            
+            # Simulate latency rising with time and bot count
+            latency = 20 + (i * 10) + (clients / 500) + random.randint(-10, 50)
+            if latency < 10: latency = 10
+            
+            st.session_state.dos_data.append({"Time": i, "Latency (ms)": latency, "Requests/s": clients * (1 + random.random())})
+            
+            # Update Chart
+            df_dos = pd.DataFrame(st.session_state.dos_data)
+            fig = px.area(df_dos, x="Time", y="Latency (ms)", title="REAL-TIME SERVER LATENCY",
+                          color_discrete_sequence=['#ff0055'])
+            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='white'))
+            chart_spot.plotly_chart(fig, use_container_width=True)
+            
+        st.success("ATTACK CEASED. TARGET RECOVERING.")
+        
+        # DOWNLOAD DATA
+        csv = pd.DataFrame(st.session_state.dos_data).to_csv(index=False).encode('utf-8')
+        st.download_button("💾 DOWNLOAD TELEMETRY DATA", csv, "dos_attack_data.csv", "text/csv")
+
+# -----------------------------------------------------------------------------
+# MODULE: WEB RECON
+# -----------------------------------------------------------------------------
 elif page == "Web Recon":
-    st.info("Web Reconnaissance Module Loaded. Start directory enumeration.")
-    st.button("Start Dirb")
+    st.title("WEB RECONNAISSANCE")
+    st.markdown("Directory Enumeration • Hidden File Discovery")
+    
+    url = st.text_input("TARGET URL", "http://paybuddy.internal")
+    
+    if st.button("START DISCOVERY"):
+        log_action("WEB_RECON", f"Started enumeration on {url}")
+        st.session_state.web_recon_results = []
+        
+        dirs = ["admin", "login", "dashboard", "uploads", "images", "css", "js", "api", "config", "backup", ".git", ".env"]
+        extensions = ["", ".php", ".html", ".json", ".sql"]
+        
+        prog = st.progress(0)
+        
+        for i, directory in enumerate(dirs):
+            time.sleep(0.1)
+            prog.progress(int((i+1)/len(dirs)*100))
+            
+            # Simulation Logic
+            full_path = f"{url}/{directory}"
+            status = 404
+            
+            # Randomly find some
+            if random.random() > 0.5:
+                status = random.choice([200, 301, 403, 500])
+                
+            if status != 404:
+                st.session_state.web_recon_results.append({
+                    "Path": full_path,
+                    "Status": status,
+                    "Type": "Directory" if status == 301 else "File"
+                })
+                if status == 200:
+                    st.success(f"[{status}] FOUND: {full_path}")
+                elif status == 403:
+                    st.warning(f"[{status}] FORBIDDEN: {full_path}")
+                elif status == 500:
+                    st.error(f"[{status}] ERROR: {full_path}")
+                    
+    if st.session_state.web_recon_results:
+        st.markdown("### 🗺️ SITE MAP")
+        df = pd.DataFrame(st.session_state.web_recon_results)
+        st.dataframe(df)
+        
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button("💾 DOWNLOAD SITEMAP", csv, "web_recon_results.csv", "text/csv")
+
+# -----------------------------------------------------------------------------
+# MODULE: PACKET SNIFFER
+# -----------------------------------------------------------------------------
 elif page == "Packet Sniffer":
-    st.info("Packet Sniffer Loaded. Listening on interface...")
-    st.button("Capture Packets")
+    st.title("PACKET CAPTURE & ANALYSIS")
+    st.markdown("Live Traffic Interception (Scapy Simulation)")
+    
+    if st.button("START CAPTURE (10s)"):
+        log_action("SNIFFER", "Started packet capture on eth0")
+        
+        placeholder = st.empty()
+        st.session_state.packets = []
+        
+        start_time = time.time()
+        while time.time() - start_time < 10:
+            time.sleep(0.2)
+            
+            src = f"192.168.1.{random.randint(2, 254)}"
+            dst = f"10.0.0.{random.randint(2, 254)}"
+            proto = random.choice(["TCP", "UDP", "HTTP", "TLSv1.2", "ICMP"])
+            length = random.randint(64, 1514)
+            info = f"Seq={random.randint(0,1000)} Ack={random.randint(0,1000)} Win={random.randint(1000,8000)}"
+            
+            pkt = f"[{datetime.now().strftime('%H:%M:%S.%f')[:-3]}] {proto} {src} -> {dst} Len={length} Info={info}"
+            st.session_state.packets.append(pkt)
+            
+            # Show "Matrix" style scrolling log
+            # Safe join to prevent syntax errors in React preview
+            log_display = "\\\\n".join(st.session_state.packets[-15:])
+            placeholder.code(log_display, language="bash")
+            
+        log_action("SNIFFER", f"Captured {len(st.session_state.packets)} packets", "SUCCESS")
+        
+    if st.session_state.packets:
+        st.success(f"CAPTURE COMPLETE. {len(st.session_state.packets)} PACKETS STORED.")
+        data = "\\\\n".join(st.session_state.packets)
+        st.download_button("💾 DOWNLOAD PCAP LOG (TXT)", data, "capture.txt", "text/plain")
+
+# -----------------------------------------------------------------------------
+# MODULE: REPORTS
+# -----------------------------------------------------------------------------
+elif page == "Reports":
+    st.title("EXECUTIVE REPORT GENERATION")
+    
+    st.markdown("### 📑 SESSION SUMMARY")
+    st.write(f"**Total Logs:** {len(st.session_state.logs)}")
+    st.write(f"**Vulnerabilities Found:** {len(st.session_state.port_results) + len(st.session_state.web_recon_results)}")
+    
+    if st.session_state.logs:
+        st.markdown("### 📜 FULL AUDIT LOG")
+        df_logs = pd.DataFrame(st.session_state.logs)
+        st.dataframe(df_logs, use_container_width=True)
+        
+        # Generate Text Report
+        report_content = f"""
+================================================================================
+PAYBUDDY CYBERGUARD V8.0 - SECURITY ASSESSMENT REPORT
+================================================================================
+Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Operator: TEAM CYBERGUARD
+Status: COMPLETED
+
+[EXECUTIVE SUMMARY]
+This report details the security testing session performed using the CyberGuard Toolkit.
+All activities were authorized and performed in a controlled environment.
+
+[SESSION METRICS]
+- Total Actions Logged: {len(st.session_state.logs)}
+- Port Scan Findings: {len(st.session_state.port_results)} ports
+- Web Recon Findings: {len(st.session_state.web_recon_results)} endpoints
+
+[DETAILED LOGS]
+{df_logs.to_string(index=False)}
+
+[SCAN RESULTS]
+{pd.DataFrame(st.session_state.port_results).to_string(index=False) if st.session_state.port_results else "No Scan Data"}
+
+================================================================================
+END OF REPORT
+================================================================================
+        """
+        
+        st.download_button("💾 DOWNLOAD FULL REPORT (TXT)", report_content, "CyberGuard_Final_Report.txt")
+        st.download_button("💾 DOWNLOAD LOGS (CSV)", df_logs.to_csv(index=False).encode('utf-8'), "CyberGuard_Logs.csv", "text/csv")
+
+    else:
+        st.info("No data available to generate report. Please run tools first.")
 `;
 
 const CodeViewer: React.FC = () => {
-    const handleDownload = () => {
-        const element = document.createElement("a");
-        const file = new Blob([PYTHON_CODE], { type: "text/x-python;charset=utf-8" });
-        element.href = URL.createObjectURL(file);
-        element.download = "app.py";
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    };
+  const [copied, setCopied] = useState(false);
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(PYTHON_CODE);
-        alert("Code copied to clipboard!");
-    };
+  const handleCopy = () => {
+    navigator.clipboard.writeText(PYTHON_CODE);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-    return (
-        <div className="h-full flex flex-col p-6 bg-slate-950">
-            <div className="flex justify-between items-center mb-6 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
-                <div>
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-2 font-mono">
-                        <Download className="w-6 h-6 text-blue-500" />
-                        Source Code Delivery (V6.0 TWIN)
-                    </h2>
-                    <p className="text-slate-400 mt-1">Download the V6.0 Python Code (Exact React Replica).</p>
-                </div>
-                <div className="flex gap-4">
-                    <button 
-                        onClick={handleCopy}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-all font-bold"
-                    >
-                        <Copy className="w-4 h-4" /> Copy
-                    </button>
-                    <button 
-                        onClick={handleDownload}
-                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-900/20 font-bold transition-all animate-pulse"
-                    >
-                        <Download className="w-5 h-5" /> Download app.py
-                    </button>
-                </div>
-            </div>
+  const handleDownload = () => {
+    const blob = new Blob([PYTHON_CODE], { type: 'text/x-python;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'app.py';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
-            <div className="flex-1 bg-[#1e1e1e] rounded-xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl">
-                <div className="bg-[#2d2d2d] px-4 py-2 flex items-center gap-2 border-b border-[#333]">
-                    <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <span className="ml-2 text-xs text-slate-400 font-mono">src/app.py (V6.0 Twin Edition)</span>
-                </div>
-                <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-                    <pre className="text-xs font-mono text-green-400 leading-relaxed whitespace-pre font-medium">
-                        {PYTHON_CODE}
-                    </pre>
-                </div>
-            </div>
-            
-            <div className="mt-4 flex items-center justify-center gap-2 text-slate-500 text-sm">
-                <CheckCircle className="w-4 h-4 text-emerald-500" />
-                <span>Verified Clean Code - UTF-8 Encoded - Streamlit Ready</span>
-            </div>
+  return (
+    <div className="h-full flex flex-col p-4 gap-4">
+      <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
+        <div>
+           <h2 className="text-xl font-bold text-white">Source Code: V8.0 Full</h2>
+           <p className="text-slate-400 text-sm">Full Features • No Skipping • Fixed Syntax Errors</p>
         </div>
-    );
+        <div className="flex gap-2">
+           <button onClick={handleCopy} className="px-4 py-2 bg-slate-700 text-white rounded-lg font-bold flex items-center gap-2 hover:bg-slate-600 transition-colors">
+             {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+             {copied ? 'Copied' : 'Copy'}
+           </button>
+           <button onClick={handleDownload} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold flex items-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20">
+             <Download className="w-4 h-4" /> Download app.py
+           </button>
+        </div>
+      </div>
+      
+      <div className="flex-1 bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-hidden relative group">
+          <pre className="h-full overflow-auto text-xs font-mono text-emerald-400 p-2 leading-relaxed whitespace-pre">
+              {PYTHON_CODE}
+          </pre>
+      </div>
+    </div>
+  );
 };
 
 export default CodeViewer;
