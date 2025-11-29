@@ -6,7 +6,8 @@ const App: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   const files = {
-    'src/app.py': `import streamlit as st
+    'src/app.py': `# VERSION: FIXED_SYNTAX_V2
+import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,6 +20,7 @@ import random
 import hashlib
 import json
 import base64
+import string
 from datetime import datetime
 from io import BytesIO
 
@@ -386,7 +388,8 @@ else:
             if any(c.islower() for c in pwd_input): charset_size += 26
             if any(c.isupper() for c in pwd_input): charset_size += 26
             if any(c.isdigit() for c in pwd_input): charset_size += 10
-            if any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in pwd_input): charset_size += 32
+            # FIX: Use string.punctuation to avoid syntax errors with hardcoded quotes
+            if any(c in string.punctuation for c in pwd_input): charset_size += 32
             
             entropy = len(pwd_input) * (0 if charset_size == 0 else (1 if charset_size == 1 else  (len(bin(charset_size)) - 2))) # Approximate bits
             
