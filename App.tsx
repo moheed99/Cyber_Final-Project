@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
@@ -27,7 +26,7 @@ import { generateSecurityReport } from './services/geminiService';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTool, setActiveTool] = useState<ToolType>(ToolType.DASHBOARD);
+  const [activeTool, setActiveTool] = useState<ToolType>(ToolType.SOURCE_CODE); // Default to Code Viewer for user convenience
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [report, setReport] = useState('');
@@ -164,7 +163,7 @@ const App: React.FC = () => {
               <ShieldCheck className="w-8 h-8 text-blue-500" />
               {TEAM_NAME}
            </div>
-           <div className="text-xs text-slate-500 mt-1 uppercase">Toolkit v4.2</div>
+           <div className="text-xs text-slate-500 mt-1 uppercase">Toolkit v5.0</div>
         </div>
 
         <nav className="flex-1 py-4 overflow-y-auto">
