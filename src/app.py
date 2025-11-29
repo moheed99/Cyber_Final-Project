@@ -13,7 +13,7 @@ import io
 # PAGE CONFIGURATION & THEME ENGINE
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="PayBuddy CyberGuard V8.1",
+    page_title="PayBuddy CyberGuard V8.2",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -171,7 +171,7 @@ def log_action(tool, message, status="INFO"):
 # -----------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("## 🛡️ CYBERGUARD")
-    st.markdown("<div style='font-size: 0.8rem; color: #64748b; margin-bottom: 20px;'>PAYBUDDY SECURITY SUITE V8.1</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size: 0.8rem; color: #64748b; margin-bottom: 20px;'>PAYBUDDY SECURITY SUITE V8.2</div>", unsafe_allow_html=True)
     
     page = st.radio("SELECT MODULE", [
         "Dashboard", 
@@ -206,7 +206,10 @@ with st.sidebar:
     
     if st.button("🔴 EMERGENCY STOP"):
         st.session_state.logs = []
-        st.experimental_rerun()
+        try:
+            st.rerun()
+        except AttributeError:
+            st.experimental_rerun()
 
 # -----------------------------------------------------------------------------
 # MODULE: DASHBOARD
@@ -220,7 +223,7 @@ if page == "Dashboard":
         st.markdown(f"""<div class='cyber-card'>
             <h3>SYSTEM STATUS</h3>
             <h1 class='status-online'>ONLINE</h1>
-            <div style='font-size:0.8rem; color:gray'>v8.1.0 STABLE</div>
+            <div style='font-size:0.8rem; color:gray'>v8.2.0 STABLE</div>
         </div>""", unsafe_allow_html=True)
     with c2:
         st.markdown(f"""<div class='cyber-card'>
@@ -389,11 +392,18 @@ elif page == "Password Auditor":
             st.write(f"**MD5 Hash (GPU Cluster):** {crack_time_md5}")
             st.write(f"**SHA-256 (Supercomputer):** {crack_time_md5}") # Simplified for demo
             
-            st.markdown("### ✅ COMPLIANCE")
-            st.checkbox("Length > 12", value=length >= 12, disabled=True)
-            st.checkbox("Contains Numbers", value=has_digits, disabled=True)
-            st.checkbox("Contains Special Chars", value=has_special, disabled=True)
-            st.checkbox("Mixed Case", value=(has_lower and has_upper), disabled=True)
+            st.markdown("### ✅ COMPLIANCE CHECK")
+            
+            # HELPER FOR STATUS
+            def check_stat(label, valid):
+                icon = "✅" if valid else "❌"
+                color = "#10b981" if valid else "#ef4444"
+                st.markdown(f"<span style='color:{color}; font-size:1rem; font-weight:bold;'>{icon} {label}</span>", unsafe_allow_html=True)
+
+            check_stat(f"Length > 12 (Current: {length})", length >= 12)
+            check_stat("Contains Numbers", has_digits)
+            check_stat("Contains Special Chars", has_special)
+            check_stat("Mixed Case", (has_lower and has_upper))
 
         log_action("AUTH_AUDIT", f"Audited password length {length}. Entropy: {entropy:.2f}")
 
@@ -562,7 +572,7 @@ elif page == "Reports":
         # Generate Text Report
         report_content = f"""
 ================================================================================
-PAYBUDDY CYBERGUARD V8.1 - SECURITY ASSESSMENT REPORT
+PAYBUDDY CYBERGUARD V8.2 - SECURITY ASSESSMENT REPORT
 ================================================================================
 Date: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 Operator: TEAM CYBERGUARD
