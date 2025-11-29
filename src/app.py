@@ -553,4 +553,3 @@ const CodeViewer: React.FC = () => {
     );
 };
 
-export default CodeViewer;
