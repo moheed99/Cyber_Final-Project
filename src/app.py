@@ -152,7 +152,7 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown("### 👤 OPERATORS")
-    st.info("Moheed Ul Hassan\nAli Abbas\nAbdur Rehman")
+    st.info("Moheed Ul Hassan\\nAli Abbas\\nAbdur Rehman")
     
     if st.button("🔴 EMERGENCY STOP"):
         st.session_state.logs = []
@@ -483,15 +483,15 @@ elif page == "Packet Sniffer":
             st.session_state.packets.append(pkt)
             
             # Show "Matrix" style scrolling log
-            placeholder.code("
-".join(st.session_state.packets[-15:]), language="bash")
+            # Safe join to prevent syntax errors in React preview
+            log_display = "\\n".join(st.session_state.packets[-15:])
+            placeholder.code(log_display, language="bash")
             
         log_action("SNIFFER", f"Captured {len(st.session_state.packets)} packets", "SUCCESS")
         
     if st.session_state.packets:
         st.success(f"CAPTURE COMPLETE. {len(st.session_state.packets)} PACKETS STORED.")
-        data = "
-".join(st.session_state.packets)
+        data = "\\n".join(st.session_state.packets)
         st.download_button("💾 DOWNLOAD PCAP LOG (TXT)", data, "capture.txt", "text/plain")
 
 # -----------------------------------------------------------------------------
